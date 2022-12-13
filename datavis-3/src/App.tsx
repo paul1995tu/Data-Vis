@@ -223,8 +223,10 @@ const App: Component = () => {
 
     return (
         <>
-
+            <div class="flexHeading" >
             <button class={"toggle"} onClick={() => setToggleMap((t) => !t)}>map based layout</button>
+            <header>States</header>
+            </div>
 
     <div class={"flex"}>
             <div class={"container"}>
