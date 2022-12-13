@@ -32,7 +32,7 @@ const airportsWithTotal: AirportWithTotalFlights[] = airports
     .map((a) => ({ ...a, flights: flightMap[a.iata] || 0 }))
     .filter((a) => a.flights > 0);
 
-// Collect states from airports
+//  loop over airports and filter states
 const states = [...new Set(airports.map((a) => a.state))];
 
 interface Airport {
@@ -95,11 +95,11 @@ const forceLink = d3
     .distance(50);
 const forceCenter = d3.forceCenter(width / 2, height / 2);
 
-// Positional force for mapbased layout
+// position force for map based layout
 const forceX = d3.forceX((d) => scaleLongitude(d.longitude));
 const forceY = d3.forceY((d) => scaleLatitude(d.latitude));
 
-// Draggability
+// create draggebillity
 function dragstarted(event: any) {
     if (!event.active) simulation.alphaTarget(0.3).restart();
     event.subject.fx = event.subject.x;
@@ -119,10 +119,10 @@ function dragended(event: any) {
 
 const drag = d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended);
 
-// Start building SVG
+// init svg
 const svg = d3.create("svg").attr("viewBox", [0, 0, width, height]).attr("class", "graphic");
 
-// Add links (aka flights)
+// Add links each link represents a flight
 const link = svg
     .append("g")
     .attr("stroke", "#aaa")
@@ -131,7 +131,7 @@ const link = svg
     .join("line")
     .attr("stroke-width", (d) => scaleFlightCount(Number(d.count)));
 
-// Add nodes (aka airports)
+// Add nodes  each node represents an airport
 const node = svg
     .append("g")
     .attr("stroke", "black")
@@ -157,7 +157,7 @@ function ticked() {
     node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
 }
 
-// Force simulation
+// simulation force
 const simulation = d3
     .forceSimulation(airportsWithTotal)
     .force("link", forceLink)
@@ -166,6 +166,37 @@ const simulation = d3
     .force("x", null)
     .force("y", null)
     .on("tick", ticked);
+
+function createLegend(states: string[]) {
+    const legendStates = d3.create("div");
+
+    // Legend for Types (colors)
+    legendStates
+        .selectAll("div")
+        .data(states)
+        .join("div")
+        .call(div => {
+            div
+                .append("svg")
+                .attr("style", "vertical-align: middle;")
+                .attr("viewBox", [0, 0, 24, 24])
+                .attr("width", 24)
+                .attr("height", 24)
+                .append("circle")
+                .attr("cx", 12)
+                .attr("cy", 10)
+                .attr("r", 6)
+                .attr("fill", d => scaleState(d))
+                .attr("stroke-width", 1.5)
+                .attr("stroke", "black");
+
+            div.append("span").text(type => type);
+        });
+
+    return legendStates.node();
+}
+
+
 
 const App: Component = () => {
     const [toggleMap, setToggleMap] = createSignal<boolean>(false);
@@ -181,15 +212,28 @@ const App: Component = () => {
     });
 
     let ref: HTMLDivElement;
+    let legend: HTMLDivElement;
 
     onMount(() => {
         ref.appendChild(svg.node());
+        legend.appendChild(createLegend(states));
+
+
     });
 
     return (
         <>
-            <button onClick={() => setToggleMap((t) => !t)}>Toggle</button>
-            <div ref={ref!}></div>;
+
+            <button class={"toggle"} onClick={() => setToggleMap((t) => !t)}>map based layout</button>
+
+    <div class={"flex"}>
+            <div class={"container"}>
+            <div class={"chart"} ref={ref!}></div>
+
+                </div>
+        <div class={"legend"} ref={legend!}>
+            </div>
+            </div>
         </>
     );
 };
