@@ -55,8 +55,7 @@ interface Flight {
     count: number;
 }
 
-const width = 1280;
-const height = 720;
+
 
 const min = d3.min(flights, (f) => Number(f.count)) as number;
 const max = d3.max(flights, (f) => Number(f.count)) as number;
